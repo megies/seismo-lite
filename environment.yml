@@ -1,7 +1,19 @@
 name: xeus-kernel
 channels:
-  - https://repo.prefix.dev/emscripten-forge-dev
+  - https://repo.prefix.dev/emscripten-forge-4x
   - https://repo.prefix.dev/conda-forge
 dependencies:
   - xeus-python
   - ipycanvas
+  - cartopy
+  - obspy
+  - kiwisolver
+  - scipy
+  - numpy
+  - pandas
+  - jupytergis-lite
+  - jupyterlite-ai
+  - pip:
+    - pyodide-http
+    - geopandas
+    - jupytergis-lab
