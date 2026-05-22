@@ -42,13 +42,8 @@ for notebook_file in root.glob('**/*.ipynb'):
     # optional how to read jupytext files
     # import jupytext
     # nb = jupytext.read("Python_Crash_Course_solution.py")
-
     nb = nbformat.read(str(notebook_file), as_version=nbformat.NO_CONVERT)
 
-    # find the first code cell and insert before
-    for i, cell in enumerate(nb.cells):
-        if cell['cell_type'] == 'code':
-            break
     # remove jupyterlite patch cells if present, before adding our patch here
     remove_cells = []
     for i, cell in enumerate(nb.cells):
@@ -58,7 +53,12 @@ for notebook_file in root.glob('**/*.ipynb'):
         nb.cells.pop(i)
         print(f'removed existing patch: {notebook_file}')
 
+    # find the first code cell and insert before
+    for i, cell in enumerate(nb.cells):
+        if cell['cell_type'] == 'code':
+            break
     nb.cells.insert(i, new_cell)
+
     # write in place
     nbformat.write(nb, str(notebook_file))
     print(f'added patch in place: {notebook_file}')
