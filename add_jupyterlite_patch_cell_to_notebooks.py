@@ -5,6 +5,7 @@ import nbformat
 from nbformat.notebooknode import NotebookNode
 
 
+JUPYTERLITE_PATCH_KEY = 'obspy_jupyterlite_patch'
 JUPYTERLITE_PATCH = """# this is required to monkey patch any urllib requests to use urllib3/requests.
 # urllib is not WASM compatible. Emscripten tries to automatically reroute any of its download
 # requests to a ws:// websocket which fails with a "Mixed content" error on an https:// deployment.
@@ -32,7 +33,7 @@ for notebook_file in root.glob('**/*.ipynb'):
     # be safe
     new_cell = {
         'cell_type': 'code',
-        'metadata': {},
+        'metadata': {JUPYTERLITE_PATCH_KEY: True},
         'execution_count': None,
         'source': JUPYTERLITE_PATCH,
         'outputs': []}
@@ -48,11 +49,15 @@ for notebook_file in root.glob('**/*.ipynb'):
     for i, cell in enumerate(nb.cells):
         if cell['cell_type'] == 'code':
             break
-    # check if that cell already is what we would write (to not do the
-    # addition twice) and skip if so
-    if cell['source'] == new_cell['source']:
-        print(f'skipping, patch already present: {notebook_file}')
-        continue
+    # remove jupyterlite patch cells if present, before adding our patch here
+    remove_cells = []
+    for i, cell in enumerate(nb.cells):
+        if cell['metadata'].get(JUPYTERLITE_PATCH_KEY):
+            remove_cells.append(i)
+    for i in remove_cells[::-1]:
+        nb.cells.pop(i)
+        print(f'removed existing patch: {notebook_file}')
+
     nb.cells.insert(i, new_cell)
     # write in place
     nbformat.write(nb, str(notebook_file))
